@@ -1,6 +1,6 @@
 // Import Firebase functions
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-import { collection, addDoc, onSnapshot, query, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { collection, addDoc, onSnapshot, query, orderBy, limit, getDocs, deleteDoc, doc, setDoc, serverTimestamp, updateDoc, where } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
 // Initialize Firebase
 window.initFirebase();
@@ -103,6 +103,12 @@ async function joinRoom(roomId) {
     if (unsubscribeMessages) unsubscribeMessages();
     if (unsubscribeUsers) unsubscribeUsers();
     
+    // Leave previous room
+    if (currentRoom) {
+        const userRef = doc(db, 'rooms', currentRoom, 'online', currentUser.uid);
+        await deleteDoc(userRef);
+    }
+    
     currentRoom = roomId;
     roomName.textContent = document.querySelector(`[data-room="${roomId}"]`).textContent;
     messages.innerHTML = '';
@@ -120,19 +126,53 @@ async function joinRoom(roomId) {
         messages.scrollTop = messages.scrollHeight;
     });
     
-    // Subscribe to online users
-    const roomRef = collection(db, 'rooms', roomId, 'online');
-    unsubscribeUsers = onSnapshot(roomRef, (snapshot) => {
-        onlineUsers.textContent = `${snapshot.size} online`;
+    // Set online status
+    const userRef = doc(db, 'rooms', roomId, 'online', currentUser.uid);
+    await setDoc(userRef, {
+        displayName: currentUser.displayName,
+        lastSeen: serverTimestamp()
     });
     
-    // Add user to online list
-    await addDoc(collection(db, 'rooms', roomId, 'online'), {
-        uid: currentUser.uid,
-        displayName: currentUser.displayName,
-        timestamp: new Date()
+    // Keep online status fresh
+    const keepAlive = setInterval(async () => {
+        if (currentRoom === roomId) {
+            await updateDoc(userRef, {
+                lastSeen: serverTimestamp()
+            }).catch(console.error);
+        } else {
+            clearInterval(keepAlive);
+        }
+    }, 30000);
+    
+    // Subscribe to online users
+    const onlineRef = collection(db, 'rooms', roomId, 'online');
+    unsubscribeUsers = onSnapshot(onlineRef, (snapshot) => {
+        const now = Date.now();
+        let count = 0;
+        
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            if (data.lastSeen) {
+                const lastSeen = data.lastSeen.toDate();
+                if ((now - lastSeen) < 60000) { // Less than 1 minute
+                    count++;
+                } else {
+                    deleteDoc(doc.ref).catch(console.error);
+                }
+            }
+        });
+        
+        onlineUsers.textContent = `${count} online`;
     });
 }
+
+// Clean up on page unload
+window.addEventListener('beforeunload', () => {
+    if (currentRoom && currentUser) {
+        const userRef = doc(db, 'rooms', currentRoom, 'online', currentUser.uid);
+        deleteDoc(userRef).catch(console.error);
+    }
+});
 
 // Message Functions
 async function sendMessage() {
