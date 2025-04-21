@@ -1,0 +1,14 @@
+{
+  "name": "chatapp",
+  "version": "1.0.0",
+  "description": "Real-time chat application using Firebase",
+  "main": "app.js",
+  "scripts": {
+    "start": "serve -s ."
+  },
+  "dependencies": {
+    "aws-sdk": "^2.1692.0",
+    "firebase": "^10.14.1",
+    "serve": "^14.2.1"
+  }
+}

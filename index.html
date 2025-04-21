@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVYJ Chat</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="auth-container" id="auth-container">
+        <div class="auth-box">
+            <div class="logo-container">
+                <div class="logo">
+                    <div class="logo-lines"></div>
+                    <span class="logo-text">S</span>
+                    <span class="logo-text">V</span>
+                    <span class="logo-text">Y</span>
+                    <span class="logo-text">J</span>
+                </div>
+                <div class="logo-subtitle">chat</div>
+            </div>
+            <div class="auth-form">
+                <input type="email" id="auth-email" placeholder="Email" class="auth-input">
+                <input type="password" id="auth-password" placeholder="Password" class="auth-input">
+                <button id="login-btn" class="auth-btn">Login</button>
+                <button id="signup-btn" class="auth-btn">Sign Up</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container" id="app-container" style="display: none;">
+        <div class="sidebar">
+            <div class="logo-container">
+                <div class="logo">
+                    <div class="logo-lines"></div>
+                    <span class="logo-text">S</span>
+                    <span class="logo-text">V</span>
+                    <span class="logo-text">Y</span>
+                    <span class="logo-text">J</span>
+                </div>
+                <div class="logo-subtitle">chat</div>
+            </div>
+            <div class="user-profile">
+                <div id="user-photo"></div>
+                <div id="user-name">Guest User</div>
+                <button id="logout-btn" class="logout-btn">Logout</button>
+            </div>
+            <div class="chat-list" id="chat-list">
+                <div class="chat-item active" data-room="general">General Chat</div>
+                <div class="chat-item" data-room="tech">Tech Talk</div>
+                <div class="chat-item" data-room="random">Random</div>
+                <button id="new-room-btn" class="new-room-btn">+ New Room</button>
+            </div>
+        </div>
+        <div class="chat-container">
+            <div class="chat-header" id="chat-header">
+                <span id="room-name">General Chat</span>
+                <span id="online-users">0 online</span>
+            </div>
+            <div class="messages" id="messages"></div>
+            <div class="message-input">
+                <input type="text" id="message-text" placeholder="Type a message...">
+                <button id="send-button">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+        import { getStorage } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js';
+        import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA9ucFZTkqOfI2Jfqnt76zSBJy50gQCt1Y",
+            authDomain: "vysjchat.firebaseapp.com",
+            projectId: "vysjchat",
+            storageBucket: "vysjchat.firebasestorage.app",
+            messagingSenderId: "513592563203",
+            appId: "1:513592563203:web:63c7985c74238742a32036",
+            measurementId: "G-8TGJYYJ553"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+        const analytics = getAnalytics(app);
+
+        window.initFirebase = function() {
+            window.auth = auth;
+            window.db = db;
+            window.storage = storage;
+        }
+    </script>
+    <script src="app.js" type="module"></script>
+</body>
+</html>
